@@ -1,9 +1,10 @@
 <?php
+	header("Content-Encoding: none");
 	define("DEBUG", true);
 
-	if (isset($_GET["f"])) {
+	if (isset($_REQUEST["f"])) {
 		// See if we support this type of request.
-		$f = $_GET["f"];
+		$f = $_REQUEST["f"];
 		if ($f == "auth") {
 			if (isset($_POST["login"]) && isset($_POST["password"])) {
 				include "modules/auth.php";
@@ -20,8 +21,13 @@
 			return;
 		} else if ($f == "claim_season_rewards") {
 			$response = array();
-		} else if ($f == "server_list") {
+		} else if ($f == "show_stats") {
 			$response = array();
+		} else if ($f == "show_simple_stats") {
+			$response = array();
+		} else if ($f == "server_list") {
+			include "modules/server_list.php";
+			$response = obtain_server_list();
 		} else if ($f == "logout") {
 			$response = array();
 		}
