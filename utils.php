@@ -2,6 +2,8 @@
 
 	header("Content-Encoding: none");
 	define("DEBUG", true);
+	define("ACCOUNT_PREMIUM", 4);
+	define("HASH_SALT", "8roespiemlasToUmiuglEhOaMiaSWlesplUcOAniupr2esPOeBRiudOEphiutOuJ");
 
 	function debug_log($text) {
 		if (DEBUG) {
@@ -28,6 +30,10 @@
 		if (!empty($all_keys)) {
 			debug_log("unchecked keys are found: " . json_encode($all_keys) . " in POST: '" . json_encode($_POST) . ", GET: " . json_encode($_GET) . "\n");
 		}
+	}
+
+	function generate_random_hash() {
+		return bin2hex(random_bytes(20));
 	}
 
 ?>

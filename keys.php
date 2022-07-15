@@ -1,8 +1,14 @@
 <?php
-	// update me!
-	$mysql_host = "localhost";
-	$mysql_port = 35780;
-	$mysql_user = "root";
-	$mysql_password = "root";
-	$mysql_database = "hon.db"; 
+
+	$mysql_host = "";
+	$mysql_port = 0;
+
+	$mysql_serverlist_user = "";
+	$mysql_serverlist_password = "";
+	$mysql_serverlist_database = "";
+
+	$mysql_accounts_user = "";
+	$mysql_accounts_password = "";
+	$mysql_accounts_database = "";
+
 ?>

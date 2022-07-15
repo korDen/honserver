@@ -9,12 +9,12 @@
 			verify_post_params(['login', 'password', 'dontClearCookies', 'OSType', 'MajorVersion', 'MinorVersion', 'MicroVersion', 'SysInfo']);
 
 			include "modules/auth.php";
-			$response = perform_auth($_POST["login"], $_POST["password"]);
+			$response = perform_login($_POST["login"], $_POST["password"]);
 		} else if ($f == "server_list") {
 			verify_post_params(['cookie', 'gametype'], ['region']);
 
 			include "modules/server_list.php";
-			$response = obtain_server_list();
+			$response = obtain_server_list($_POST['cookie']);
 		} else if ($f == "get_upgrades") {
 			verify_post_params(['aaa']);
 			// yes, return.

@@ -8,6 +8,20 @@
 		if ($f == "start_game") {
 			verify_post_params(['session', 'code', 'extra', 'map', 'version', 'mname', 'mstr', 'casual', 'arrangedmatchtype', 'match_mode', 'accounts']);
 			$response = array();
+		} else if ($f == "new_session") {
+			verify_post_params(['login', 'pass', 'port', 'name', 'desc', 'location', 'ip']);
+			$response['session'] = generate_random_hash();
+		} else if ($f == "accept_key") {
+			verify_post_params(['session', 'acc_key']);
+			// This doesn't seem to be used in any way.
+			$response['server_id'] = 0;
+		} else if ($f == "c_conn") {
+			verify_post_params(['session', 'cookie', 'ip', 'cas', 'new']);
+			include "modules/c_conn.php";
+			$response = perform_auth($_POST['cookie']);
+		} else if ($f == "get_quickstats") {
+			verify_post_params(['ranked', 'casual', 'session', 'account_id']);
+			$response = array();
 		}
 	}
 
