@@ -7,10 +7,12 @@
 		$f = $_REQUEST["f"];
 		if ($f == "start_game") {
 			verify_post_params(['session', 'code', 'extra', 'map', 'version', 'mname', 'mstr', 'casual', 'arrangedmatchtype', 'match_mode', 'accounts']);
-			$response = array();
+			include "modules/start_game.php";
+			$response = start_game();
 		} else if ($f == "new_session") {
 			verify_post_params(['login', 'pass', 'port', 'name', 'desc', 'location', 'ip']);
-			$response['session'] = generate_random_hash();
+			include 'modules/new_session.php';
+			$response = create_game_session();
 		} else if ($f == "accept_key") {
 			verify_post_params(['session', 'acc_key']);
 			// This doesn't seem to be used in any way.

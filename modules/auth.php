@@ -3,7 +3,7 @@
 function perform_login($login, $password) {
 	include 'keys.php';
 
-	$mysqli = new mysqli($mysql_host, $mysql_accounts_user, $mysql_accounts_password, $mysql_accounts_database, $mysql_port);
+	$mysqli = new mysqli($mysql_host, $mysql_user, $mysql_password, $mysql_database, $mysql_port);
 
 	$statement = $mysqli->prepare("SELECT password, cookie, account_id FROM accounts WHERE login = ?");
 	$statement->bind_param('s', $login);

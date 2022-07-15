@@ -61,6 +61,10 @@
 		} else if ($f == "get_account_all_hero_stats") {
 			verify_post_params(['cookie']);
 			$response = array();
+		} else if ($f == "get_match_stats") {
+			verify_post_params(['match_id', 'cookie']);
+			include 'modules/get_match_stats.php';
+			$response = get_match_stats($_POST['match_id']);
 		}
 	}
 
