@@ -26,22 +26,24 @@ function submit_stats($data) {
 	$match_summ['winning_team'] = $winning_team;
 	$result['match_summ'][$match_id] = $match_summ;
 
-	$inventory = array();
-	foreach ($data['inventory'] as $account_id=>$value) {
-		$player_stat = array(
-			"account_id" => strval($account_id),
-            "match_id" => strval($match_id),
-        );
-		for ($slot = 0; $slot < 6; $slot++) {
-			if (isset($value[$slot])) {
-				$player_stat["slot_".($slot + 1)] = $value[$slot];
-			} else {
-				$player_stat["slot_".($slot + 1)] = null;
+	if (isset($data['inventory'])) {
+		$inventory = array();
+		foreach ($data['inventory'] as $account_id=>$value) {
+			$player_stat = array(
+				"account_id" => strval($account_id),
+	            "match_id" => strval($match_id),
+	        );
+			for ($slot = 0; $slot < 6; $slot++) {
+				if (isset($value[$slot])) {
+					$player_stat["slot_".($slot + 1)] = $value[$slot];
+				} else {
+					$player_stat["slot_".($slot + 1)] = null;
+				}
 			}
+			$inventory[$account_id] = $player_stat;
 		}
-		$inventory[$account_id] = $player_stat;
+		$result['inventory'][$match_id] = $inventory;
 	}
-	$result['inventory'][$match_id] = $inventory;
 	$result_string = serialize($result);
 
 	$mysqli = new mysqli($mysql_host, $mysql_user, $mysql_password, $mysql_database, $mysql_port);

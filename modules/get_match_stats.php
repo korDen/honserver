@@ -12,7 +12,12 @@ function get_match_stats($match_id) {
 	$result = $statement->get_result();
 	$row = $result->fetch_row();
 
-	return unserialize($row[0]);
+	if ($row == null) {
+		return array();
+	}
+
+	$response = unserialize($row[0]);
+	return $response;
 }
 
 ?>

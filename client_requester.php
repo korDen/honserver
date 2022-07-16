@@ -16,9 +16,13 @@
 			include "modules/server_list.php";
 			$response = obtain_server_list($_POST['cookie']);
 		} else if ($f == "get_upgrades") {
-			verify_post_params(['aaa']);
-			// yes, return.
-			return;
+			verify_post_params(['cookie']);
+			include 'modules/get_upgrades.php';
+			$response = get_upgrades($_POST['cookie']);
+		} else if ($f == "get_initStats") {
+			verify_post_params(['cookie']);
+			include 'modules/get_initStats.php';
+			$response = get_init_stats($_POST['cookie']);
 		} else if ($f == "get_special_messages") {
 			verify_post_params(['cookie']);
 			$response = array();
