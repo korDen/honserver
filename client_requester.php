@@ -31,7 +31,8 @@
 			$response = array();
 		} else if ($f == "get_products") {
 			verify_post_params(['account_id', 'cookie', 'crc']);
-			$response = array();
+			include 'upgrades.php';
+			$response = get_store_products();
 		} else if ($f == "claim_season_rewards") {
 			verify_post_params(['cookie']);
 			$response = array();
@@ -64,7 +65,22 @@
 			$response = array();
 		} else if ($f == "get_account_all_hero_stats") {
 			verify_post_params(['cookie']);
-			$response = array();
+			$response = array(
+	            'all_hero_stats' => array(
+	            	'ranked' => array(
+	            	// Example of what it can contain:
+	            	// 	0 => array(
+	            	// 		'cli_name' => 'Hero_Valkyrie',
+            		// 		'rnk_ph_used' => 20,
+            		// 		'rnk_ph_wins' => 8,
+            		// 		'rnk_ph_losses' => 12,
+	            	// 	),
+	            	),
+	            	'casual' => array(),
+	            	'campaign' => array(),
+	            	'campaign_casual' => array(),
+	            ),
+			);
 		} else if ($f == "get_match_stats") {
 			verify_post_params(['match_id', 'cookie']);
 			include 'modules/get_match_stats.php';

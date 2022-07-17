@@ -2,10 +2,11 @@
 
 function perform_login($login, $password) {
 	include 'keys.php';
+	include 'upgrades.php';
 
 	$mysqli = new mysqli($mysql_host, $mysql_user, $mysql_password, $mysql_database, $mysql_port);
 
-	$statement = $mysqli->prepare("SELECT password, cookie, account_id FROM accounts WHERE login = ?");
+	$statement = $mysqli->prepare("SELECT password, cookie, account_id, points, mmpoints, upgrades FROM accounts WHERE login = ?");
 	$statement->bind_param('s', $login);
 
 	$statement->execute();
@@ -15,9 +16,13 @@ function perform_login($login, $password) {
 	$no_password = "";
 	if ($row === null) {
 		// User not found. Add it but without password.
-		$statement = $mysqli->prepare("INSERT INTO accounts (login, password, cookie) VALUES (?,?,?)");
+		$statement = $mysqli->prepare("INSERT INTO accounts (login, password, cookie, points, mmpoints, upgrades) VALUES (?,?,?)");
 		$cookie = generate_random_hash();
-		$statement->bind_param('sss', $login, $no_password, $cookie);
+		$points = 0;
+		$mmpoints = 1000;
+		$upgrades = array();
+		$upgrades_serialized = serialize("upgrades");
+		$statement->bind_param('sssiis', $login, $no_password, $cookie, $points, $mmpoints, $upgrades_serialized);
 		$statement->execute();
 		$account_id = $statement->insert_id;
 	} else if ($row[0] != $no_password && $row[0] != $password) {
@@ -32,17 +37,36 @@ function perform_login($login, $password) {
 		$statement = $mysqli->prepare("UPDATE accounts SET cookie = ? WHERE account_id = ?");
 		$statement->bind_param("si", $cookie, $account_id);
 		$statement->execute();
+
+		$points = $row[3];
+		$mmpoints = $row[4];
+		$upgrades = unserialize($row[5]);
 	}
 
+	// Required fields.
 	$ip = $_SERVER['REMOTE_ADDR'];
-	$response['nickname'] = $login;
-	$response['cookie'] = $cookie;
+
+	// Required for auth.
 	$response['ip'] = $ip;
+	$response['cookie'] = $cookie;
+	$response['auth_hash'] = sha1($account_id . $ip . $cookie . HASH_SALT);
+
+	$response['nickname'] = $login;
 	$response['account_id'] = $account_id;
 	$response['account_type'] = ACCOUNT_PREMIUM;
+
+	// Not required but avoids error messages in console.
 	$response['account_cloud_storage_info']['use_cloud'] = false;
 	$response['account_cloud_storage_info']['cloud_autoupload'] = false;
-	$response['auth_hash'] = sha1($account_id . $ip . $cookie . HASH_SALT);
+
+	// infos.
+	$infos['account_id'] = $account_id;
+	$response['infos'][0] = $infos;
+	$response['my_upgrades_info'] = array();
+
+	$response['points'] = $points;
+	$response['mmpoints'] = $mmpoints;
+	$response['my_upgrades'] = $upgrades;
 
 	return $response;
 }

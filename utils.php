@@ -11,9 +11,9 @@
 		}
 	}
 
-	function verify_post_params($reqired_keys, $optional_keys = []) {
+	function verify_post_params($required_keys, $optional_keys = []) {
 		$all_keys = array_keys($_POST);
-		foreach ($reqired_keys as $key) {
+		foreach ($required_keys as $key) {
 			if (($index = array_search($key, $all_keys)) !== false) {
 				unset($all_keys[$index]);
 			} else {
