@@ -41,7 +41,8 @@
 			$response = array();
 		} else if ($f == "show_simple_stats") {
 			verify_post_params(['cookie', 'nickname']);
-			$response = array();
+			include 'modules/show_simple_stats.php';
+			$response = get_simple_stats($_POST['nickname']);
 		} else if ($f == "get_account_mastery") {
 			verify_post_params(['cookie', 'f']);
 			$response = array();
