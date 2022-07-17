@@ -6,7 +6,7 @@ function get_simple_stats($nickname) {
 
 	$mysqli = new mysqli($mysql_host, $mysql_user, $mysql_password, $mysql_database, $mysql_port);
 
-	$statement = $mysqli->prepare("SELECT account_id, upgrades FROM accounts WHERE login = ?");
+	$statement = $mysqli->prepare("SELECT account_id, upgrades, selected_upgrades FROM accounts WHERE login = ?");
 	$statement->bind_param('s', $nickname);
 
 	$statement->execute();
@@ -23,13 +23,13 @@ function get_simple_stats($nickname) {
 
 	// This is complete list of fields used.
 	$response['nickname'] = $nickname;
-	$response['level'] = 0;
+	$response['level'] = 1;
 	$response['level_exp'] = 0;
 	$response['hero_num'] = 0;
-	$response['avatar_num'] = count($upgrades);
+	$response['avatar_num'] = count($upgrades); // Not quite accurate since upgrades includes all, not just avatars.
 	$response['total_played'] = 0;
 	$response['mvp_num'] = 0;
-	$response['selected_upgrades'] = "ai.Default Icon";
+	$response['selected_upgrades'] = $row[2];
 	$response['account_id'] = $account_id;
 	$response['season_id'] = 0;
 	$response['season_normal'] = array(

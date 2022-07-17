@@ -2,7 +2,6 @@
 
 function perform_login($login, $password) {
 	include 'keys.php';
-	include 'upgrades.php';
 
 	$mysqli = new mysqli($mysql_host, $mysql_user, $mysql_password, $mysql_database, $mysql_port);
 
@@ -16,13 +15,14 @@ function perform_login($login, $password) {
 	$no_password = "";
 	if ($row === null) {
 		// User not found. Add it but without password.
-		$statement = $mysqli->prepare("INSERT INTO accounts (login, password, cookie, points, mmpoints, upgrades) VALUES (?,?,?)");
+		$statement = $mysqli->prepare("INSERT INTO accounts (login, password, cookie, points, mmpoints, upgrades, selected_upgrades) VALUES (?,?,?)");
 		$cookie = generate_random_hash();
 		$points = 0;
 		$mmpoints = 1000;
 		$upgrades = array();
 		$upgrades_serialized = serialize("upgrades");
-		$statement->bind_param('sssiis', $login, $no_password, $cookie, $points, $mmpoints, $upgrades_serialized);
+		$selected_upgrades = "ai.Default Icon";
+		$statement->bind_param('sssiiss', $login, $no_password, $cookie, $points, $mmpoints, $upgrades_serialized, $selected_upgrades);
 		$statement->execute();
 		$account_id = $statement->insert_id;
 	} else if ($row[0] != $no_password && $row[0] != $password) {

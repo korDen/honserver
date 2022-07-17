@@ -38,7 +38,8 @@
 			$response = array();
 		} else if ($f == "show_stats") {
 			verify_post_params(['cookie', 'nickname', 'table', 'f']);
-			$response = array();
+			include 'modules/show_stats.php';
+			$response = show_stats($_POST['nickname'], $_POST['table']);
 		} else if ($f == "show_simple_stats") {
 			verify_post_params(['cookie', 'nickname']);
 			include 'modules/show_simple_stats.php';
@@ -86,6 +87,18 @@
 			verify_post_params(['match_id', 'cookie']);
 			include 'modules/get_match_stats.php';
 			$response = get_match_stats($_POST['match_id']);
+		} else if ($f == "get_player_award_summ") {
+			verify_post_params(['nickname', 'cookie', 'f']);
+			include 'modules/get_player_award_summ.php';
+			$response = get_player_award_summ($_POST['nickname']);
+		} else if ($f == "get_seasons") {
+			verify_post_params(['nickname', 'cookie', 'f']);
+			include 'modules/get_seasons.php';
+			$response = get_seasons($_POST['nickname']);
+		} else if ($f == "match_history_overview") {
+			verify_post_params(['nickname', 'cookie', 'f', 'table', 'num', 'current_season']);
+			include 'modules/match_history_overview.php';
+			$response = match_history_overview($_POST['nickname'], $_POST['num']);
 		}
 	}
 
