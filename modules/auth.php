@@ -15,14 +15,15 @@ function perform_login($login, $password) {
 	$no_password = "";
 	if ($row === null) {
 		// User not found. Add it but without password.
-		$statement = $mysqli->prepare("INSERT INTO accounts (login, password, cookie, points, mmpoints, upgrades, selected_upgrades) VALUES (?,?,?)");
+		$statement = $mysqli->prepare("INSERT INTO accounts (login, password, cookie, points, mmpoints, upgrades, selected_upgrades, acc_key) VALUES (?,?,?,?,?,?,?,?)");
 		$cookie = generate_random_hash();
 		$points = 0;
 		$mmpoints = 1000;
 		$upgrades = array();
-		$upgrades_serialized = serialize("upgrades");
+		$upgrades_serialized = serialize($upgrades);
 		$selected_upgrades = "ai.Default Icon";
-		$statement->bind_param('sssiiss', $login, $no_password, $cookie, $points, $mmpoints, $upgrades_serialized, $selected_upgrades);
+		$acc_key = "";
+		$statement->bind_param('sssiisss', $login, $no_password, $cookie, $points, $mmpoints, $upgrades_serialized, $selected_upgrades, $acc_key);
 		$statement->execute();
 		$account_id = $statement->insert_id;
 	} else if ($row[0] != $no_password && $row[0] != $password) {
@@ -41,6 +42,7 @@ function perform_login($login, $password) {
 		$points = $row[3];
 		$mmpoints = $row[4];
 		$upgrades = unserialize($row[5]);
+		$selected_upgrades = $row[6];
 	}
 
 	// Required fields.
@@ -67,6 +69,7 @@ function perform_login($login, $password) {
 	$response['points'] = $points;
 	$response['mmpoints'] = $mmpoints;
 	$response['my_upgrades'] = $upgrades;
+	$response['selected_upgrades'] = $selected_upgrades;
 
 	return $response;
 }

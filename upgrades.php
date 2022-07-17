@@ -1,5 +1,101 @@
 <?php
 
+function get_product_by_id($requested_product_id) {
+  $store_products = get_store_products();
+  foreach ($store_products['products'] as $key=>$product_list) {
+      foreach ($product_list as $product_id=>$product) {
+        if ($product_id == $requested_product_id) {
+          file_put_contents('product.txt', "product_id: ".$requested_product_id." product: ".json_encode($product));
+          return $product;
+        }
+      }
+    }
+
+    return null;
+}
+
+function buy_product($request_code, $product, $cookie, $currency, $type) {
+  $response['responseCode'] = $request_code;
+  $response['error'] = '';
+  if ($product == null) {
+    $response['popupCode'] = 1;
+    $response['errorCode'] = 24; // mstore_error24
+    return $response;
+  }
+
+  if (!$product['purchasable']) {
+    // cannot purchase this item.
+    $response['popupCode'] = 1;
+    $response['errorCode'] = 23; // mstore_error23
+    return $response;
+  }
+
+  include 'keys.php';
+
+  $mysqli = new mysqli($mysql_host, $mysql_user, $mysql_password, $mysql_database, $mysql_port);
+  $statement = $mysqli->prepare("SELECT upgrades, points, mmpoints FROM accounts WHERE cookie = ?");
+  $statement->bind_param('s', $cookie);
+
+  $statement->execute();
+  $result = $statement->get_result();
+  $row = $result->fetch_row();
+  if ($row == null) {
+    // could not find this user.
+    $response['popupCode'] = 1;
+    $response['errorCode'] = 3; // mstore_error3
+    return $response;
+  }
+
+  $upgrades_old = $row[0];
+  $upgrades = unserialize($upgrades_old);
+  $upgrade_name = $type.".".$product['name'];
+  if (in_array($upgrade_name, $upgrades)) {
+    $response['popupCode'] = 1;
+    $response['errorCode'] = 33; // mstore_error33
+    return $response;
+  }
+
+  $points_old = $row[1];
+  $mmpoints_old = $row[2];
+  if ($currency == 0) {
+    // gold.
+    $cost = $product['cost'];
+    if ($points_old < $cost) {
+      $response['popupCode'] = 1;
+      $response['errorCode'] = 21; // mstore_error21
+      return $response;
+    }
+
+    $points_new = $points_old - $cost;
+    $mmpoints_new = $mmpoints_old;
+  } else {
+    // assume silver.
+    $cost = $product['premium_mmp_cost'];
+    if ($mmpoints_old < $cost) {
+      $response['popupCode'] = 1;
+      $response['errorCode'] = 21; // mstore_error21
+      return $response;
+    }
+
+    $points_new = $points_old;
+    $mmpoints_new = $mmpoints_old - $cost;
+  }
+
+  array_push($upgrades, $upgrade_name);
+  $upgrades_new = serialize($upgrades);
+
+  $statement = $mysqli->prepare("UPDATE accounts SET points = ?, mmpoints = ?, upgrades = ? WHERE cookie = ? AND points = ? AND mmpoints = ? AND upgrades = ?");
+  $statement->bind_param('iissiis', $points_new, $mmpoints_new, $upgrades_new, $cookie, $points_old, $mmpoints_old, $upgrades_old);
+  $statement->execute();
+
+  $response['popupCode'] = 3;
+  $response['errorCode'] = 0;
+  $response['totalPoints'] = $points_new;
+  $response['totalMMPoints'] = $mmpoints_new;
+  $response['errorCode'] = 0;
+  return $response;
+}
+
 function get_store_products() {
 	return array (
       'products' => 
@@ -13118,6 +13214,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/legion/icons/taunt.tga',
           ),
           471 => 
           array (
@@ -13128,6 +13225,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/legion/icons/taunt.tga',
           ),
           472 => 
           array (
@@ -13138,6 +13236,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_gib.tga',
           ),
           522 => 
           array (
@@ -13148,6 +13247,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_baby.tga',
           ),
           679 => 
           array (
@@ -13158,6 +13258,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_hellbourne.tga',
           ),
           909 => 
           array (
@@ -13168,6 +13269,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_sol.tga',
           ),
           926 => 
           array (
@@ -13178,6 +13280,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_dump.tga',
           ),
           960 => 
           array (
@@ -13188,6 +13291,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_gs.tga',
           ),
           1002 => 
           array (
@@ -13198,6 +13302,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_chiprel.tga',
           ),
           1082 => 
           array (
@@ -13208,6 +13313,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_kongor.tga',
           ),
           1148 => 
           array (
@@ -13218,6 +13324,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_rip.tga',
           ),
           1193 => 
           array (
@@ -13228,6 +13335,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_honeybadger.tga',
           ),
           1217 => 
           array (
@@ -13238,6 +13346,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_acme.tga',
           ),
           1359 => 
           array (
@@ -13248,6 +13357,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_fatlady.tga',
           ),
           1418 => 
           array (
@@ -13258,6 +13368,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_blacksmith.tga',
           ),
           1485 => 
           array (
@@ -13268,6 +13379,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_celebration.tga',
           ),
           1498 => 
           array (
@@ -13278,6 +13390,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_fortune_cookie.tga',
           ),
           2000 => 
           array (
@@ -13288,6 +13401,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_rainbow.tga',
           ),
           2001 => 
           array (
@@ -13298,6 +13412,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_treasure_chest.tga',
           ),
           2573 => 
           array (
@@ -13308,6 +13423,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_ursa.tga',
           ),
           2680 => 
           array (
@@ -13318,6 +13434,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_snowman.tga',
           ),
           2885 => 
           array (
@@ -13328,6 +13445,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_rest_in_p.tga',
           ),
           2902 => 
           array (
@@ -13338,6 +13456,18 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_gamer_rage.tga',
+          ),
+          2947 => 
+          array (
+            'name' => '5\'s Taunt',
+            'cname' => '5\'s_Taunt',
+            'cost' => '10',
+            'premium' => '0',
+            'premium_mmp_cost' => '100',
+            'dynamic' => '0',
+            'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_5.tga',
           ),
           3020 => 
           array (
@@ -13348,6 +13478,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            '$product_id' => '/ui/fe2/store/icons/taunt_paragon.tga',
           ),
           3100 => 
           array (
@@ -13358,6 +13489,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_wolf_time.tga',
           ),
           3264 => 
           array (
@@ -13368,6 +13500,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_slap_the_troll.tga',
           ),
           3290 => 
           array (
@@ -13378,6 +13511,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_siam.tga',
           ),
           3471 => 
           array (
@@ -13388,6 +13522,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_get_rekt.tga',
           ),
           3930 => 
           array (
@@ -13398,6 +13533,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_beammeup.tga',
           ),
           3931 => 
           array (
@@ -13408,6 +13544,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_orbitalstrike.tga',
           ),
           3932 => 
           array (
@@ -13418,6 +13555,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_ascensionboogie.tga',
           ),
           4071 => 
           array (
@@ -13428,6 +13566,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_killerball.tga',
           ),
           4432 => 
           array (
@@ -13438,6 +13577,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_badpresent.tga',
           ),
           4850 => 
           array (
@@ -13448,6 +13588,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_graffiti.tga',
           ),
           4886 => 
           array (
@@ -13458,6 +13599,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_miku.tga',
           ),
           5293 => 
           array (
@@ -13468,6 +13610,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_songkran.tga',
           ),
           5377 => 
           array (
@@ -13478,6 +13621,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_shikigami.tga',
           ),
           5534 => 
           array (
@@ -13488,6 +13632,7 @@ function get_store_products() {
             'premium_mmp_cost' => '100',
             'dynamic' => '0',
             'purchasable' => '1',
+            'content' => '/ui/fe2/store/icons/taunt_poker.tga',
           ),
         ),
         'Misc' => 

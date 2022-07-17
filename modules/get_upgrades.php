@@ -6,7 +6,7 @@ function get_upgrades($cookie) {
 
 	$mysqli = new mysqli($mysql_host, $mysql_user, $mysql_password, $mysql_database, $mysql_port);
 
-	$statement = $mysqli->prepare("SELECT account_id, points, mmpoints, upgrades FROM accounts WHERE cookie = ?");
+	$statement = $mysqli->prepare("SELECT account_id, points, mmpoints, upgrades, selected_upgrades FROM accounts WHERE cookie = ?");
 	$statement->bind_param('s', $cookie);
 
 	$statement->execute();
@@ -24,7 +24,15 @@ function get_upgrades($cookie) {
 
 	$response['points'] = $row[1];
 	$response['mmpoints'] = $row[2];
+	$response['game_tokens'] = 0;
+	$response['standing'] = 3;
+	$response['level'] = 1;
+	$response['level_exp'] = 1;
+	// $response['season_level'] = 0;
+	// $response['creep_level'] = 0;
+	// $response['gca_prime_inv'] = array();
 	$response['my_upgrades'] = unserialize($row[3]);
+	$response['selected_upgrades'] = $row[4];
 
 	return $response;
 }

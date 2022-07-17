@@ -99,6 +99,10 @@
 			verify_post_params(['nickname', 'cookie', 'f', 'table', 'num', 'current_season']);
 			include 'modules/match_history_overview.php';
 			$response = match_history_overview($_POST['nickname'], $_POST['num']);
+		} else if ($f == "selected_upgrades") {
+			verify_post_params(['cookie', 'selected_upgrades']);
+			include 'modules/selected_upgrades.php';
+			$response = select_upgrades($_POST['cookie'], $_POST['selected_upgrades']);
 		}
 	}
 
